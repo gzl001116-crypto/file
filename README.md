@@ -39,7 +39,9 @@ QINGLAN_ORIGIN=https://rapid-antimony-bxix9kp.vercel.app
 
 ## 发布到 Cloudflare
 
-项目用 OpenNext 部署到 Cloudflare Workers。账本存在名为 `lanbi-ledger` 的 KV 里，不写磁盘。
+项目用 OpenNext 部署到 Cloudflare Workers。Workers Builds 的构建命令用 `npm run build`，部署命令用 `npx wrangler deploy`。在 Cloudflare 上，`npm run build` 会先编译 OpenNext，再把结果交给 `wrangler deploy`。只跑 `next build` 时，部署会报找不到 OpenNext 配置。
+
+能创建 KV 时，账本存在名为 `lanbi-ledger` 的 KV 里。创建不了时，这次部署会去掉无效的 KV 绑定，硬币改记在浏览器里。
 
 在已经登录 Cloudflare 的电脑上：
 
@@ -72,4 +74,4 @@ npx wrangler secret put QINGLAN_PAYMENT_SECRET
 
 ## 美元入账
 
-这一台没有接银行卡。在兑换页确认金额后，按 1 美元 = 1 硬币记入账本。单笔 1.00 到 500.00 美元。本地账本写在 `data/ledger.json`，其中包含登录凭证，已从 git 忽略。发布到 Cloudflare 后，同一份账本改存在 KV `lanbi-ledger`，Worker 重启不会清空。
+这一台没有接银行卡。在兑换页确认金额后，按 1 美元 = 1 硬币记入账本。单笔 1.00 到 500.00 美元。本地账本写在 `data/ledger.json`，其中包含登录凭证，已从 git 忽略。Cloudflare 上若绑定了 KV `lanbi-ledger`，服务端账本记在那里。当前货架的登录和硬币记在浏览器里，换一台浏览器要重新登录。
