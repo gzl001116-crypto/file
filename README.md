@@ -64,7 +64,7 @@ export CLOUDFLARE_ACCOUNT_ID=你的账号ID
 npm run deploy
 ```
 
-`npm run deploy` 会创建 KV（如果还没有），再构建并发布。线上地址是账号子域名下的 `lanbi.<账号>.workers.dev`。
+`npm run deploy` 会创建 KV（如果还没有），再构建并发布。Workers Builds 里的项目名是 `file`，线上地址是账号子域名下的 `file.<账号>.workers.dev`。
 
 支付密钥不要写进仓库。发布后执行：
 
