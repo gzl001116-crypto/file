@@ -61,7 +61,7 @@ export function describeWork(work: QinglanWork, creators: { id: string; name?: s
 async function sessionCookie() {
   const viewer = await getViewer()
   if (!viewer) return { viewer: null, cookie: "" }
-  const session = readStore().sessions[viewer.sessionId]
+  const session = (await readStore()).sessions[viewer.sessionId]
   return { viewer, cookie: session?.cookie ?? "" }
 }
 

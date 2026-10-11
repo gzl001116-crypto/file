@@ -61,7 +61,7 @@ async function OrderCard({
   cookieSessionId: string
   balance: number
 }) {
-  const cookie = readStore().sessions[cookieSessionId]?.cookie ?? ""
+  const cookie = (await readStore()).sessions[cookieSessionId]?.cookie ?? ""
   const loaded = await qinglan<{
     error?: string
     title?: string

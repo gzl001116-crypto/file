@@ -38,7 +38,7 @@ export const getViewer = cache(async function getViewer(): Promise<Viewer | null
   const jar = await cookies()
   const sessionId = jar.get(SESSION_COOKIE)?.value
   if (!sessionId) return null
-  const db = readStore()
+  const db = await readStore()
   const session = db.sessions[sessionId]
   if (!session) return null
   const remote = await qinglan<{
@@ -112,7 +112,7 @@ export async function closeSession() {
   const jar = await cookies()
   const sessionId = jar.get(SESSION_COOKIE)?.value
   if (sessionId) {
-    const db = readStore()
+    const db = await readStore()
     const session = db.sessions[sessionId]
     if (session) {
       await qinglan("/api/auth/logout", { method: "POST", cookie: session.cookie })

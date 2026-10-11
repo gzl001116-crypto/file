@@ -37,6 +37,39 @@ QINGLAN_ORIGIN=https://rapid-antimony-bxix9kp.vercel.app
 
 从青澜跳到支付站时，把地址指到本站的 `/pay?orderId=订单号`。订单金额必须对得上青澜货架里的标价。
 
+## 发布到 Cloudflare
+
+项目用 OpenNext 部署到 Cloudflare Workers。账本存在名为 `lanbi-ledger` 的 KV 里，不写磁盘。
+
+在已经登录 Cloudflare 的电脑上：
+
+```bash
+npx wrangler login
+npm run deploy
+```
+
+远程环境访问不到本机 `localhost:8976` 回调时，改用设备码：
+
+```bash
+npx wrangler login --browser false --device
+```
+
+也可以不登录，改用 API 令牌。令牌需要账号的 Workers 脚本编辑权限和 Workers KV 存储编辑权限。
+
+```bash
+export CLOUDFLARE_API_TOKEN=你的令牌
+export CLOUDFLARE_ACCOUNT_ID=你的账号ID
+npm run deploy
+```
+
+`npm run deploy` 会创建 KV（如果还没有），再构建并发布。线上地址是账号子域名下的 `lanbi.<账号>.workers.dev`。
+
+支付密钥不要写进仓库。发布后执行：
+
+```bash
+npx wrangler secret put QINGLAN_PAYMENT_SECRET
+```
+
 ## 美元入账
 
-这一台没有接银行卡。在兑换页确认金额后，按 1 美元 = 1 硬币记入账本。单笔 1.00 到 500.00 美元。账本写在 `data/ledger.json`，其中包含登录凭证，已从 git 忽略。部署到无持久磁盘的环境时，余额会在实例重启后清空。
+这一台没有接银行卡。在兑换页确认金额后，按 1 美元 = 1 硬币记入账本。单笔 1.00 到 500.00 美元。本地账本写在 `data/ledger.json`，其中包含登录凭证，已从 git 忽略。发布到 Cloudflare 后，同一份账本改存在 KV `lanbi-ledger`，Worker 重启不会清空。
