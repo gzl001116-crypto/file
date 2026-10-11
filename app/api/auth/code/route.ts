@@ -1,5 +1,7 @@
-import { qinglan } from "@/lib/qinglan"
 import { jsonError } from "@/lib/http"
+import { usingShelf } from "@/lib/mode"
+import { qinglan } from "@/lib/qinglan"
+import { sendShelfCode } from "@/lib/session"
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as {
@@ -9,6 +11,10 @@ export async function POST(request: Request) {
   const email = body?.email?.trim() ?? ""
   const purpose = body?.purpose === "register" ? "register" : "login"
   if (!email.includes("@")) return jsonError("请填写有效的邮箱。", 400)
+  if (await usingShelf()) {
+    const previewCode = await sendShelfCode(email, purpose)
+    return Response.json({ delivered: false, previewCode })
+  }
   const result = await qinglan<{
     error?: string
     delivered?: boolean

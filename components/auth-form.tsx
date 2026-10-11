@@ -41,7 +41,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next: str
         setNote(`验证码已发到 ${email.trim()}，10 分钟内有效。`)
       } else if (data?.previewCode) {
         setPreview(data.previewCode)
-        setNote("青澜把验证码直接显示在下面，填进去即可。")
+        setNote("发信还没接上，验证码直接显示在下面，填进去即可。")
       } else {
         setNote("验证码已发出，10 分钟内有效。")
       }

@@ -10,6 +10,9 @@ import {
   type QinglanOrder,
   type QinglanWork,
 } from "@/lib/qinglan"
+import { usingShelf } from "@/lib/mode"
+import { readPass, writePass } from "@/lib/pass"
+import { isShelfId, shelfCreators, shelfWorks } from "@/lib/shelf"
 import { getViewer } from "@/lib/session"
 import { newId, readStore, updateStore } from "@/lib/store"
 
@@ -17,9 +20,13 @@ type Catalog = {
   works: QinglanWork[]
   creators: { id: string; name?: string }[]
   error?: string
+  source: "shelf" | "qinglan"
 }
 
 export const loadCatalog = cache(async function loadCatalog(): Promise<Catalog> {
+  if (await usingShelf()) {
+    return { works: shelfWorks, creators: shelfCreators, source: "shelf" }
+  }
   const result = await qinglan<{
     works?: QinglanWork[]
     creators?: { id: string; name?: string }[]
@@ -27,15 +34,15 @@ export const loadCatalog = cache(async function loadCatalog(): Promise<Catalog> 
   }>("/api/catalog")
   if (!result.ok) {
     return {
-      works: [],
-      creators: [],
-      error: result.data.error || "青澜货架暂时打不开。",
+      works: shelfWorks,
+      creators: shelfCreators,
+      source: "shelf",
     }
   }
   const works = (result.data.works ?? []).filter(
     (work) => work && typeof work.id === "string" && typeof work.title === "string",
   )
-  return { works, creators: result.data.creators ?? [] }
+  return { works, creators: result.data.creators ?? [], source: "qinglan" }
 })
 
 export function paidWorks(works: QinglanWork[]) {
@@ -54,7 +61,7 @@ export function describeWork(work: QinglanWork, creators: { id: string; name?: s
     ...work,
     author: creatorName(creators, work.creatorId),
     kindLabel: kindLabel(work.kind),
-    href: workHref(work),
+    href: isShelfId(work.id) ? `/works/${work.id}` : workHref(work),
   }
 }
 
@@ -66,6 +73,9 @@ async function sessionCookie() {
 }
 
 export async function redeemWork(workId: string) {
+  if ((await usingShelf()) || isShelfId(workId)) {
+    return redeemShelfWork(workId)
+  }
   const { viewer, cookie } = await sessionCookie()
   if (!viewer || !cookie) return { ok: false as const, error: "先用青澜账号登录。" }
   const catalog = await loadCatalog()
@@ -176,9 +186,62 @@ function matchOrderWork(works: QinglanWork[], order: QinglanOrder, title?: strin
   return null
 }
 
+async function redeemShelfWork(workId: string) {
+  const viewer = await getViewer()
+  if (!viewer) return { ok: false as const, error: "先登录，才能用硬币兑换。" }
+  const work = shelfWorks.find((item) => item.id === workId) ?? null
+  const decision = redeemDecision({
+    work,
+    balanceCents: viewer.balanceCents,
+    owned: viewer.purchases.includes(workId),
+    paymentReady: true,
+  })
+  if (!decision.ok) return { ok: false as const, error: decision.error }
+  if (!work) return { ok: false as const, error: "这部作品不在货架上。" }
+  const pass = await readPass()
+  if (!pass || pass.balanceCents < decision.costCents) {
+    return { ok: false as const, error: "硬币不够。先把美元换成硬币。" }
+  }
+  if (!pass.purchases.includes(work.id)) {
+    pass.balanceCents -= decision.costCents
+    pass.purchases = [work.id, ...pass.purchases]
+    pass.entries.unshift({
+      id: newId("led"),
+      at: Date.now(),
+      kind: "redeem",
+      deltaCents: -decision.costCents,
+      workId: work.id,
+      title: work.title,
+      orderId: newId("ord"),
+      href: `/works/${work.id}`,
+    })
+    await writePass(pass)
+  }
+  return {
+    ok: true as const,
+    href: `/works/${work.id}`,
+    title: work.title,
+    orderId: pass.entries[0]?.orderId ?? "",
+  }
+}
+
 export async function topUp(usdCents: number) {
   const viewer = await getViewer()
-  if (!viewer) return { ok: false as const, error: "先用青澜账号登录。" }
+  if (!viewer) return { ok: false as const, error: "先登录，才能把美元换成硬币。" }
+  if (await usingShelf()) {
+    const pass = await readPass()
+    if (!pass) return { ok: false as const, error: "账号不在这台浏览器里。请重新登录。" }
+    pass.balanceCents += usdCents
+    pass.entries.unshift({
+      id: newId("led"),
+      at: Date.now(),
+      kind: "topup",
+      deltaCents: usdCents,
+      usdCents,
+    })
+    await writePass(pass)
+    return { ok: true as const, balanceCents: pass.balanceCents }
+  }
   const balanceCents = await updateStore((db) => {
     const account = db.accounts[viewer.userId]
     if (!account) return null

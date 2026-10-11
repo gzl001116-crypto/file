@@ -45,7 +45,9 @@ async function WorkBody({ params }: { params: Promise<{ id: string }> }) {
         <Price label="折合美元" value={formatUsd(item.price)} />
       </div>
       {owned ? (
-        <p>这个青澜账号已经买过，可以回去接着看。</p>
+        <Link href={item.href} className="text-sm underline-offset-4 hover:underline">
+          已经兑换，继续阅读
+        </Link>
       ) : !viewer ? (
         <Link href={`/login?next=/shop/${work.id}`} className="text-sm underline-offset-4 hover:underline">
           登录后用硬币兑换
@@ -60,9 +62,15 @@ async function WorkBody({ params }: { params: Promise<{ id: string }> }) {
       ) : (
         <RedeemButton workId={work.id} label={`用 ${formatCoins(work.price)} 硬币兑换`} />
       )}
-      <a className="text-sm text-muted-foreground underline-offset-4 hover:underline" href={item.href}>
-        在青澜查看
-      </a>
+      {catalog.source === "qinglan" ? (
+        <a className="text-sm text-muted-foreground underline-offset-4 hover:underline" href={item.href}>
+          在青澜查看
+        </a>
+      ) : (
+        <Link href={item.href} className="text-sm text-muted-foreground underline-offset-4 hover:underline">
+          打开正文
+        </Link>
+      )}
     </main>
   )
 }

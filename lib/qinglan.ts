@@ -54,13 +54,24 @@ export async function qinglan<T = Record<string, unknown>>(
   const headers = new Headers({ accept: "application/json" })
   if (init.body !== undefined) headers.set("content-type", "application/json")
   if (init.cookie) headers.set("cookie", init.cookie)
-  const response = await fetch(`${QINGLAN_ORIGIN}${path}`, {
-    method: init.method ?? "GET",
-    headers,
-    body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-    cache: "no-store",
-    redirect: "manual",
-  })
+  let response: Response
+  try {
+    response = await fetch(`${QINGLAN_ORIGIN}${path}`, {
+      method: init.method ?? "GET",
+      headers,
+      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      cache: "no-store",
+      redirect: "manual",
+      signal: AbortSignal.timeout(5000),
+    })
+  } catch {
+    return {
+      ok: false,
+      status: 502,
+      data: { error: "青澜货架暂时打不开。" } as T,
+      setCookies: [],
+    }
+  }
   const text = await response.text()
   let data: T
   if (!text) data = {} as T

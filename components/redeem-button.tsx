@@ -50,7 +50,7 @@ export function RedeemButton({
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {href ? (
         <a className="text-sm underline-offset-4 hover:underline" href={href}>
-          去青澜阅读
+          {href.startsWith("/") ? "打开作品" : "去青澜阅读"}
         </a>
       ) : null}
     </div>

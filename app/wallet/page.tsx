@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { TopupForm } from "@/components/topup-form"
 import { formatCoins, formatUsd } from "@/lib/money"
+import { usingShelf } from "@/lib/mode"
 import { getViewer } from "@/lib/session"
 
 export const metadata = { title: "兑换" }
@@ -16,12 +17,15 @@ export default function WalletPage() {
 
 async function WalletBody() {
   const viewer = await getViewer()
+  const shelf = await usingShelf()
   if (!viewer) {
     return (
       <main className="desk max-w-lg py-14">
-        <h1 className="font-heading text-4xl">先登录青澜账号</h1>
+        <h1 className="font-heading text-4xl">{shelf ? "先登录" : "先登录青澜账号"}</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          硬币记在青澜账号上。用同一个邮箱登录之后，才能把美元换成硬币。
+          {shelf
+            ? "验证码会显示在登录页上。硬币记在这台浏览器里，登录之后才能把美元换成硬币。"
+            : "硬币记在青澜账号上。用同一个邮箱登录之后，才能把美元换成硬币。"}
         </p>
         <Link href="/login?next=/wallet" className="mt-6 inline-block underline-offset-4 hover:underline">
           去登录

@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { QINGLAN_ORIGIN, paymentReady } from "@/lib/qinglan"
+import { usingShelf } from "@/lib/mode"
+import { paymentReady } from "@/lib/qinglan"
 import { formatCoins } from "@/lib/money"
 import { getViewer } from "@/lib/session"
 import { LogoutButton } from "@/components/logout-button"
@@ -26,7 +27,8 @@ export function HeaderFallback() {
 
 export async function SiteHeader() {
   const viewer = await getViewer()
-  const ready = paymentReady()
+  const shelf = await usingShelf()
+  const ready = shelf || paymentReady()
   return (
     <header className="border-b border-border/80 bg-card/80 backdrop-blur">
       {!ready ? (
@@ -80,10 +82,10 @@ export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-border/80">
       <div className="desk flex flex-col gap-2 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>澜币和青澜共用邮箱账号。1 美元记 1 硬币，只兑换青澜标价出售的作品。</p>
-        <a className="underline-offset-4 hover:underline" href={QINGLAN_ORIGIN}>
-          打开青澜
-        </a>
+        <p>1 美元记 1 硬币。硬币只兑换货架上标价出售的小说、漫画和短片。</p>
+        <Link href="/shop" className="underline-offset-4 hover:underline">
+          去货架
+        </Link>
       </div>
     </footer>
   )

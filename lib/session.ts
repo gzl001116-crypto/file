@@ -7,6 +7,8 @@ import {
   qinglan,
   type QinglanUser,
 } from "@/lib/qinglan"
+import { usingShelf } from "@/lib/mode"
+import { clearPass, consumeOtp, issueOtp, readPass, writePass } from "@/lib/pass"
 import { newId, readStore, updateStore, type Account, type LedgerEntry } from "@/lib/store"
 
 export const SESSION_COOKIE = "lanbi_session"
@@ -35,6 +37,20 @@ function accountOf(accounts: Record<string, Account>, userId: string, email: str
 }
 
 export const getViewer = cache(async function getViewer(): Promise<Viewer | null> {
+  if (await usingShelf()) {
+    const pass = await readPass()
+    if (!pass) return null
+    return {
+      sessionId: pass.userId,
+      userId: pass.userId,
+      email: pass.email,
+      name: pass.name,
+      balanceCents: pass.balanceCents,
+      entries: pass.entries,
+      purchases: pass.purchases,
+      paymentReady: true,
+    }
+  }
   const jar = await cookies()
   const sessionId = jar.get(SESSION_COOKIE)?.value
   if (!sessionId) return null
@@ -108,10 +124,46 @@ export async function openSession(input: {
   return { error: null, name, email, userId: user.id }
 }
 
+export async function openShelfSession(input: { email: string; name?: string }) {
+  const email = input.email.trim().toLowerCase()
+  const existing = await readPass()
+  const pass =
+    existing?.email === email
+      ? { ...existing, name: (input.name || existing.name).slice(0, 16) }
+      : {
+          userId: newId("usr"),
+          email,
+          name: (input.name || "读者").slice(0, 16),
+          balanceCents: 0,
+          entries: [] as LedgerEntry[],
+          purchases: [] as string[],
+        }
+  await writePass(pass)
+  return pass
+}
+
+export async function sendShelfCode(email: string, purpose: "login" | "register") {
+  const code = await issueOtp(email, purpose)
+  return code
+}
+
+export async function acceptShelfCode(input: {
+  email: string
+  code: string
+  purpose: "login" | "register"
+  name?: string
+}) {
+  const ok = await consumeOtp(input.email, input.purpose, input.code)
+  if (!ok) return { error: "验证码不对，或已经超过 10 分钟。" as const }
+  const pass = await openShelfSession({ email: input.email, name: input.name })
+  return { error: null, name: pass.name, email: pass.email }
+}
+
 export async function closeSession() {
+  await clearPass()
   const jar = await cookies()
   const sessionId = jar.get(SESSION_COOKIE)?.value
-  if (sessionId) {
+  if (sessionId && !(await usingShelf())) {
     const db = await readStore()
     const session = db.sessions[sessionId]
     if (session) {

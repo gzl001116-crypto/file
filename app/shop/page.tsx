@@ -27,9 +27,13 @@ async function ShopBody({ searchParams }: { searchParams: Promise<{ kind?: strin
     <main className="desk py-12">
       <header className="max-w-2xl">
         <p className="text-sm text-muted-foreground">货架</p>
-        <h1 className="mt-2 font-heading text-4xl">只卖青澜的作品</h1>
+        <h1 className="mt-2 font-heading text-4xl">
+          {catalog.source === "shelf" ? "正在卖的作品" : "只卖青澜的作品"}
+        </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          目录来自青澜当前公开的作品。标价 0 分的不在这里。100 分等于 1 硬币，也等于 1 美元。
+          {catalog.source === "shelf"
+            ? "小说、漫画和短片都在这只货架上。100 分等于 1 硬币，也等于 1 美元。兑换之后在这里打开全文。"
+            : "目录来自青澜当前公开的作品。标价 0 分的不在这里。100 分等于 1 硬币，也等于 1 美元。"}
         </p>
       </header>
       <div className="mt-6 flex flex-wrap gap-2 text-sm">
