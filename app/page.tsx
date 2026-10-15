@@ -23,7 +23,7 @@ async function HomeBody() {
       <div className="mt-4 grid items-end gap-8 lg:grid-cols-[1.3fr_0.7fr]">
         <div>
           <h1 className="max-w-xl font-heading text-5xl leading-tight sm:text-6xl">
-            一美元，一枚硬币。
+            用硬币，兑换喜欢的作品。
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-foreground/80">
             {catalog.source === "shelf"
@@ -43,14 +43,14 @@ async function HomeBody() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3 font-heading text-2xl">
               <CoinMark className="size-14 text-2xl" />
-              汇率
+              兑换规则
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm leading-relaxed">
             <p>
-              <strong>1.00 美元 = 1.00 硬币</strong>
+              <strong>只使用已有硬币</strong>
             </p>
-            <p>青澜标价以分为单位。100 分写成 1.00 元，在这里兑换 1.00 硬币。</p>
+            <p>兑换时会核对青澜当前标价，并从账户余额扣除相应硬币。</p>
             <p className="text-muted-foreground">免费作品留在青澜阅读，不会出现在这只货架上。</p>
           </CardContent>
         </Card>
