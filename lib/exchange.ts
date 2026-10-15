@@ -225,38 +225,11 @@ async function redeemShelfWork(workId: string) {
   }
 }
 
-export async function topUp(usdCents: number) {
-  const viewer = await getViewer()
-  if (!viewer) return { ok: false as const, error: "先登录，才能把美元换成硬币。" }
-  if (await usingShelf()) {
-    const pass = await readPass()
-    if (!pass) return { ok: false as const, error: "账号不在这台浏览器里。请重新登录。" }
-    pass.balanceCents += usdCents
-    pass.entries.unshift({
-      id: newId("led"),
-      at: Date.now(),
-      kind: "topup",
-      deltaCents: usdCents,
-      usdCents,
-    })
-    await writePass(pass)
-    return { ok: true as const, balanceCents: pass.balanceCents }
+export async function topUp(_usdCents: number) {
+  return {
+    ok: false as const,
+    error: "美元入账已关闭。硬币只能由授权的系统或管理员入账；本页面不会凭空增加余额。",
   }
-  const balanceCents = await updateStore((db) => {
-    const account = db.accounts[viewer.userId]
-    if (!account) return null
-    account.balanceCents += usdCents
-    account.entries.unshift({
-      id: newId("led"),
-      at: Date.now(),
-      kind: "topup",
-      deltaCents: usdCents,
-      usdCents,
-    })
-    return account.balanceCents
-  })
-  if (balanceCents == null) return { ok: false as const, error: "账号不在账本里。" }
-  return { ok: true as const, balanceCents }
 }
 
 async function charge(
