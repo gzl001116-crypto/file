@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { Suspense } from "react"
-import { TopupForm } from "@/components/topup-form"
-import { formatCoins, formatUsd } from "@/lib/money"
+import { formatCoins } from "@/lib/money"
 import { usingShelf } from "@/lib/mode"
 import { getViewer } from "@/lib/session"
 
@@ -24,8 +23,8 @@ async function WalletBody() {
         <h1 className="font-heading text-4xl">{shelf ? "先登录" : "先登录青澜账号"}</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {shelf
-            ? "验证码会显示在登录页上。硬币记在这台浏览器里，登录之后才能把美元换成硬币。"
-            : "硬币记在青澜账号上。用同一个邮箱登录之后，才能把美元换成硬币。"}
+            ? "验证码会显示在登录页上。登录后可以查看余额并用已有硬币兑换作品。"
+            : "硬币记在青澜账号上。用同一个邮箱登录之后，可以查看余额并兑换作品。"}
         </p>
         <Link href="/login?next=/wallet" className="mt-6 inline-block underline-offset-4 hover:underline">
           去登录
@@ -38,13 +37,13 @@ async function WalletBody() {
       <header>
         <p className="text-sm text-muted-foreground">{viewer.name}</p>
         <h1 className="mt-2 font-heading text-5xl">{formatCoins(viewer.balanceCents)}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">硬币 · 折合 {formatUsd(viewer.balanceCents)}</p>
+        <p className="mt-2 text-sm text-muted-foreground">可用硬币余额</p>
       </header>
       <section className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="font-heading text-2xl">美元换成硬币</h2>
-        <div className="mt-4">
-          <TopupForm />
-        </div>
+        <h2 className="font-heading text-2xl">仅使用硬币</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          本站不提供美元充值或银行卡支付。硬币余额只会由授权的系统或管理员入账；兑换作品时，系统会在服务器核验余额后扣除硬币。
+        </p>
       </section>
     </main>
   )
