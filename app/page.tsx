@@ -27,12 +27,12 @@ async function HomeBody() {
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-foreground/80">
             {catalog.source === "shelf"
-              ? "货架上有小说、漫画和一分钟短片。硬币按 1 比 1 从美元记入，兑换之后在这里打开全文。"
-              : "登录用的是青澜邮箱。硬币按 1 比 1 从美元记入，只能拿去兑换青澜上正在标价出售的小说、漫画和视频。"}
+              ? "货架上有小说、漫画和一分钟短片。使用已有硬币兑换，成功后即可打开全文。"
+              : "登录用的是青澜邮箱。使用已有硬币兑换青澜上正在标价出售的小说、漫画和视频。"}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/wallet" className={buttonVariants({ className: "h-10 px-4" })}>
-              把美元换成硬币
+              查看硬币余额
             </Link>
             <Link href="/shop" className={buttonVariants({ variant: "outline", className: "h-10 px-4" })}>
               看货架
@@ -58,7 +58,7 @@ async function HomeBody() {
       <ol className="mt-14 grid gap-4 sm:grid-cols-3">
         {[
           ["01", "同一个账号", catalog.source === "shelf" ? "用邮箱注册。验证码显示在页面上，填进去就能登录。" : "注册和登录都走青澜的邮箱验证码。这边没有另一套密码。"],
-          ["02", "美元入账", "填写美元金额，按同样的数字记成硬币。单笔 1 到 500 美元。"],
+          ["02", "使用硬币", "硬币由授权系统或管理员入账；本网站不提供美元充值。"],
           ["03", "兑换后阅读", catalog.source === "shelf" ? "扣掉硬币之后，正文就在这部作品的页面里。" : "货架直接读取青澜目录。兑换成功后，回青澜打开全文。"],
         ].map(([index, title, copy]) => (
           <li key={index} className="rounded-2xl border border-border bg-card/80 p-5">
